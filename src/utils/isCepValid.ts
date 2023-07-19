@@ -1,21 +1,29 @@
 import axios from "axios";
 
 export interface CepData {
-  cep: string,
-  logradouro: string,
-  complemento: string,
-  bairro: string,
-  localidade: string,
-  uf: string,
-  ddd: string
+  state: string,
+  city: string,
+  address: string,
+  status: number
 }
 
 export interface ErrorCep {
-  erro: boolean
+  code: string,
+  status: number
 }
 
-export default async function isCepValid(cep: string): Promise<CepData | ErrorCep> {
+export default async function isCepValid(cep: string) {
 
-  const { data } = await axios.get<CepData | ErrorCep>(`https://viacep.com.br/ws/${cep}/json/`);
-  return data;
+  try {
+    const { data } = await axios.get<CepData>(`https://cdn.apicep.com/file/apicep/${cep}.json`);
+    return data;
+  }
+  catch (e) {
+    const data: ErrorCep = {
+      code: "NOT_FOUND",
+      status: 404
+    }
+    return data
+  }
+
 }

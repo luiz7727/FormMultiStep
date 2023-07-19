@@ -8,21 +8,25 @@ import Image from "next/image";
 import 'animate.css';
 import { isCpfValid } from "@/utils/isCpfValid";
 import { isAdult } from "@/utils/isAdult";
+import isCepValid, { CepData } from "@/utils/isCepValid";
 
 const mySchema = z.object({
   name: z.string().min(4, { message: "Name is required" }).nonempty({ message: "Nome é obrigatório" }),
   cpf: z.string().min(11, { message: "O cpf precisa ter no mínimo 11 números" }).max(11, { message: "O cpf precisa ter no máximo 11 números" })
     .nonempty({ message: "cpf é obrigatório" }).refine((cpf) => isCpfValid(cpf), { message: "CPF inválido" }),
   email: z.string().nonempty({ message: "O email é obrigatório" }),
-  password: z.string().nonempty({ message: "A senha é obrigatória" }).regex(/^(?=.*[A-Z])(?=.*\\d)(?=.*[a-zA-Z])(?=.*[@#$%^&+=]).+$/, { message: "Sua senha precisa ter ao menos uma letra maiúscula, numero e um caracter especial" }),
+  password: z.string().nonempty({ message: "A senha é obrigatória" }),
   telephone: z.string().nonempty({ message: "Telefone é obrigatório" }),
   bornDate: z.string().nonempty({ message: "Data de nascimento é obrigatório" }).refine((date) => isAdult(date), { message: "Voce precisa ser maior de idade" }),
   gender: z.string().min(4, { message: "O genero precisa ter no mínimo 4 caracteres" }).nonempty({ message: "O genero é obrigatório" }),
   ethnicity: z.string().nonempty({ message: "A raça é obrigatória" }),
   address: z.object({
-    cep: z.string().nonempty({ message: "O cep é obrigatório" }).min(8, { message: "o cep precisa ter no mínimo 8 caracteres" }).max(8, { message: "o cep precisa ter no máximo 8 caracteres" }),
+    cep: z.string().nonempty({ message: "O cep é obrigatório" }).min(8, { message: "o cep precisa ter no mínimo 8 caracteres" }).max(9, { message: "o cep precisa ter no máximo 9 caracteres" }),
     nameStreet: z.string().nonempty({ message: "O nome da rua é obrigatório" }),
     numberStreet: z.coerce.number().nonnegative({ message: "O numero não pode ser negativo" }),
+    state: z.string().nonempty({ message: "O estado é obrigatório" }),
+    city: z.string().nonempty({ message: "A cidade é obrigatória" }),
+    neighborhood: z.string().nonempty({ message: "O bairro é obrigatório" }),
     complement: z.string().optional()
   }),
   graduation: z.array(z.object({
@@ -41,20 +45,41 @@ export default function Home() {
 
   const [step, setStep] = useState<number>(1);
 
-  const { control, register, watch, handleSubmit, formState: { errors }, setValue } = useForm<createUserFormData>({
-    resolver: zodResolver(mySchema)
+  const [inputDisabled, setInputDisabled] = useState<boolean>(false);
+
+  const { control, clearErrors, register, watch, getValues, setError, handleSubmit, formState: { errors }, setValue } = useForm<createUserFormData>({
+    resolver: zodResolver(mySchema),
+    reValidateMode: "onChange",
+    mode: "onChange"
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: "graduation" })
 
-  console.log(errors);
-
   function validateStep1() {
-    setStep(step + 1)
+    if (getValues("name").length > 0 && getValues("cpf").length > 0 && getValues("email").length > 0 && getValues("password") && getValues("telephone") &&
+      getValues("bornDate") && getValues("gender") && getValues("ethnicity")
+    ) {
+      setStep(step + 1);
+    }
   }
 
-  function validateStep2() {
+  async function validateStep2() {
 
+    const data = await isCepValid(getValues("address.cep"));
+
+    if (data.status === 200) {
+      clearErrors("address.cep");
+      const response = data as CepData;
+      setValue("address.nameStreet", response.address);
+      setValue("address.state", response.state);
+      setValue("address.city", response.city);
+      setInputDisabled(true);
+      setStep(step + 1);
+    }
+
+    if (data.status === 404) {
+      setError("address.cep", { message: "Cep inválido" })
+    }
   }
 
   function onSubmit(data: createUserFormData) {
@@ -72,15 +97,15 @@ export default function Home() {
   return (
     <main className="w-screen h-screen flex items-center justify-center bg-white text-base p-2">
 
-      <section className="w-1/2 h-auto flex flex-col border-2 rounded-sm p-4 gap-1">
+      <section className="w-1/2 h-auto md:text-[12px] sm:text-[10px] flex flex-col border-2 rounded-sm p-4 gap-1">
 
-        <div className="w-full flex items-center justify-between rounded-sm">
+        <div className="w-full flex items-center justify-between rounded-sm sm:flex-col sm:items-center">
 
           <div className="flex items-center">
             <div className={`w-7 h-7 p-2 flex items-center justify-center rounded-full bg-[#E1E1E6] ${step === 1 && 'bg-violet-900'}`}>
               <p className={`text-[#8D8D99] ${step === 1 && 'text-white'}`}>1</p>
             </div>
-            <p className={`ml-2 text-[#8D8D99] ${step === 1 && 'text-black'}`}>Dados Pessoais</p>
+            <p className={` ml-2 text-[#8D8D99] ${step === 1 && 'text-black'}`}>Dados Pessoais</p>
           </div>
 
           <Image width={8} height={8} className="w-auto h-auto" src="https://i.imgur.com/9S7IJxm.png" alt="" />
@@ -171,13 +196,13 @@ export default function Home() {
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">CEP</label>
-                  <input minLength={8} maxLength={8} autoComplete="off" {...register("address.cep")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none" placeholder="Digite o cep" />
+                  <input minLength={9} maxLength={9} autoComplete="off" {...register("address.cep")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none" placeholder="Digite o cep" />
                   {errors.address?.cep && <p className="text-red-900">{errors.address.cep.message}</p>}
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Nome da rua</label>
-                  <input autoComplete="off" {...register("address.nameStreet")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o nome da rua" />
+                  <input disabled={inputDisabled} autoComplete="off" {...register("address.nameStreet")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o nome da rua" />
                   {errors.address?.nameStreet && <p className="text-red-900">{errors.address.nameStreet.message}</p>}
                 </div>
 
@@ -189,13 +214,31 @@ export default function Home() {
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Complemento</label>
-                  <input autoComplete="off" {...register("address.complement")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  <input disabled={inputDisabled} autoComplete="off" {...register("address.complement")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
+                </div>
+
+                <div className="w-full flex flex-col">
+                  <label className="text-black">Cidade</label>
+                  <input disabled={inputDisabled} autoComplete="off" {...register("address.city")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
+                </div>
+
+                <div className="w-full flex flex-col">
+                  <label className="text-black">Estado</label>
+                  <input disabled={inputDisabled} autoComplete="off" {...register("address.state")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
+                </div>
+
+                <div className="w-full flex flex-col">
+                  <label className="text-black">Bairro</label>
+                  <input autoComplete="off" {...register("address.neighborhood")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
                   {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
                 </div>
 
                 <div className="w-full flex items-center justify-between mt-8">
                   <button type="button" className="uppercase w-36 text-[#633BBC] border-2 border-[#633BBC] bg-white rounded-lg p-2" onClick={() => setStep(step - 1)}>Voltar</button>
-                  <button type="button" className="p-2 rounded-lg bg-[#633BBC] text-white uppercase" onClick={() => validateStep2()}>Continuar</button>
+                  <button type="submit" className="p-2 rounded-lg bg-[#633BBC] text-white uppercase" onClick={() => validateStep2()}>Continuar</button>
                 </div>
 
               </div>
@@ -293,6 +336,6 @@ export default function Home() {
         </form>
       </section>
 
-    </main>
+    </main >
   )
 }
