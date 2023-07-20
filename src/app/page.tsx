@@ -9,7 +9,6 @@ import 'animate.css';
 import { isCpfValid } from "@/utils/isCpfValid";
 import { isAdult } from "@/utils/isAdult";
 import isCepValid, { CepData } from "@/utils/isCepValid";
-<<<<<<< HEAD
 import InputMask from 'react-input-mask';
 import isPasswordValid from "@/utils/isPasswordValid";
 
@@ -38,33 +37,6 @@ const mySchema = z.object({
     dateStart: z.string().nonempty({ message: 'O campo "Data Início" é obrigatório.' }),
     dateEnd: z.string().nonempty({ message: 'O campo "Data Fim" é obrigatório.' }),
     isIntitutionPrivate: z.string().nonempty({message: 'O campo "Tipo da Instituição" é obrigatório.'}),
-=======
-
-const mySchema = z.object({
-  name: z.string().min(4, { message: "Nome precisa ter no mínimo 4 caracteres" }).nonempty({ message: "Nome é obrigatório" }),
-  cpf: z.string().min(11, { message: "O cpf precisa ter no mínimo 11 números" }).max(11, { message: "O cpf precisa ter no máximo 11 números" })
-    .nonempty({ message: "cpf é obrigatório" }).refine((cpf) => isCpfValid(cpf), { message: "CPF inválido" }),
-  email: z.string().nonempty({ message: "O email é obrigatório" }),
-  password: z.string().nonempty({ message: "A senha é obrigatória" }),
-  telephone: z.string().nonempty({ message: "Telefone é obrigatório" }),
-  bornDate: z.string().nonempty({ message: "Data de nascimento é obrigatório" }).refine((date) => isAdult(date), { message: "Voce precisa ser maior de idade" }),
-  gender: z.string().min(4, { message: "O genero precisa ter no mínimo 4 caracteres" }).nonempty({ message: "O genero é obrigatório" }),
-  ethnicity: z.string().nonempty({ message: "A raça é obrigatória" }),
-  address: z.object({
-    cep: z.string().nonempty({ message: "O cep é obrigatório" }).min(8, { message: "o cep precisa ter no mínimo 8 caracteres" }).max(9, { message: "o cep precisa ter no máximo 9 caracteres" }),
-    nameStreet: z.string().nonempty({ message: "O nome da rua é obrigatório" }),
-    numberStreet: z.coerce.number().nonnegative({ message: "O numero não pode ser negativo" }),
-    state: z.string().nonempty({ message: "O estado é obrigatório" }),
-    city: z.string().nonempty({ message: "A cidade é obrigatória" }),
-    neighborhood: z.string().nonempty({ message: "O bairro é obrigatório" }),
-    complement: z.string().optional()
-  }),
-  graduation: z.array(z.object({
-    name: z.string().nonempty({ message: "O nome da graduação é obrigatório" }),
-    dateStart: z.string().nonempty({ message: "A data de início é obrigatório" }),
-    dateEnd: z.string().nonempty({ message: "A data de fim é obrigatório" }),
-    isIntitutionPrivate: z.boolean().default(false),
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
   })).min(1, "Insira pelo menos uma graduação"),
   acceptRegulation: z.boolean().default(false).refine((value) => value === true, { message: "Você precisa aceitar os Termos de Privacidade." })
 }).required();
@@ -109,11 +81,7 @@ export default function Home() {
 
   function validateStep2() {
 
-<<<<<<< HEAD
     if (getValues("address.nameStreet").length > 0 && getValues("address.numberStreet") >= 0 && getValues("address.city").length > 0 && getValues("address.state").length > 0 && getValues("address.neighborhood").length > 0) {
-=======
-    if(getValues("address.nameStreet").length > 0 && getValues("address.numberStreet") >= 0 && getValues("address.city").length > 0 && getValues("address.state").length > 0 && getValues("address.neighborhood").length > 0) {
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
       setStep(step + 1);
     }
   }
@@ -123,11 +91,7 @@ export default function Home() {
   }
 
   function addNewGraduation() {
-<<<<<<< HEAD
     append({ name: "", institution:"",  isIntitutionPrivate: "", dateStart: "", dateEnd: "" });
-=======
-    append({ name: "", dateStart: "", dateEnd: "", isIntitutionPrivate: false });
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
   }
 
   function removeGraduation(id: string) {
@@ -139,15 +103,7 @@ export default function Home() {
 
 
   return (
-<<<<<<< HEAD
     <main className="w-screen flex items-center justify-center bg-white text-base p-2">
-=======
-    <main className="w-screen h-screen flex items-center justify-center bg-white text-base p-2">
-
-      <section className="w-1/2 h-auto md:text-[12px] sm:text-[10px] flex flex-col border-2 rounded-sm p-4 gap-1">
-
-        <div className="w-full flex items-center justify-between rounded-sm sm:flex-col sm:items-center">
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
 
       <section className="w-full flex flex-col items-center justify-between rounded-md md:w-4/5 md:border-2 md:py-3 lg:border-2 lg:w-2/3 lg:py-3 xl:py-5 xl:border-2 xl:w-2/3 2xl:border-2 2xl:w-2/3 2xl:py-5">
         <div className="w-full flex items-center justify-between pt-4 md:p-2 md:px-10 lg:px-10 lg:pt-2 xl:px-10 xl:pt-2 2xl:pt-2 2xl:px-10" >
@@ -155,11 +111,7 @@ export default function Home() {
             <div className={`w-7 h-7 p-2 flex items-center justify-center rounded-full bg-[#E1E1E6] ${step === 1 && 'bg-violet-900'}`}>
               <p className={`text-[#8D8D99] ${step === 1 && 'text-white'}`}>1</p>
             </div>
-<<<<<<< HEAD
             <p className={`ml-1 text-[#8D8D99] ${step === 1 && 'text-black'}`}>Dados Pessoais</p>
-=======
-            <p className={` ml-2 text-[#8D8D99] ${step === 1 && 'text-black'}`}>Dados Pessoais</p>
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
           </div>
 
           <Image width={8} height={8} className="w-auto h-auto" src="https://i.imgur.com/9S7IJxm.png" alt="" />
@@ -267,22 +219,11 @@ export default function Home() {
 
                 <div className="w-full flex flex-col pb-6">
                   <label className="text-black">CEP</label>
-<<<<<<< HEAD
                   <div className="w-full flex items-center">
                     <InputMask mask="99999-999"  {...register("address.cep")} type="text" className="p-2 md:w-3/4 lg:w-3/4 xl:w-10/12 2xl:w-10/12 border-2 border-[#E1E1E6]  rounded-md text-black outline-none" placeholder="Digite o CEP" />
                     <button type="button" className="rounded-lg p-2 bg-[#633BBC] text-white ml-10 md:ml-8 lg:ml-12 xl:ml-5 2xl:ml-12" onClick={() => searchCep()}>Buscar CEP</button>
                   </div>
                   {errors.address?.cep && <p className="text-red-600">{errors.address.cep.message}</p>}
-=======
-                  
-                  <div className="w-full flex items-center">
-                    <input minLength={9} maxLength={9} autoComplete="off" {...register("address.cep")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none" placeholder="Digite o cep" />
-                    <button type="button" className="rounded-lg p-2 bg-green-900 text-white" onClick={() => searchCep()}>Buscar CEP</button>
-                  </div>
-                  
-                  {errors.address?.cep && <p className="text-red-900">{errors.address.cep.message}</p>}
-
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
                 </div>
 
                 <div className="w-full flex flex-col pb-6">
@@ -291,17 +232,10 @@ export default function Home() {
                   {errors.address?.state && <p className="text-red-600">{errors.address.state.message}</p>}
                 </div>
 
-<<<<<<< HEAD
                 <div className="w-full flex flex-col pb-6">
                   <label className="text-black">Cidade</label>
                   <input autoComplete="off" {...register("address.city")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-md text-black outline-none" placeholder="Digite a Cidade" />
                   {errors.address?.city && <p className="text-red-600">{errors.address.city.message}</p>}
-=======
-                <div className="w-full flex flex-col">
-                  <label className="text-black">Numero da rua</label>
-                  <input min={0} autoComplete="off" {...register("address.numberStreet")} type="number" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o número da sua rua" />
-                  {errors.address?.numberStreet && <p className="text-red-900">{errors.address.numberStreet.message}</p>}
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
                 </div>
 
                 <div className="w-full flex flex-col pb-6">
@@ -427,20 +361,8 @@ export default function Home() {
                               {errors.graduation?.[index] && <p className="text-red-600">{errors.graduation[index]?.dateEnd?.message}</p>}
                             </div>
 
-<<<<<<< HEAD
 
 
-=======
-                            <div className="flex flex-col items-start">
-                              <label className="text-black" >É uma instituição privada ?</label>
-                              <input
-                                placeholder="Informe se é uma instituição privada"
-                                className="ml-4 p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none"
-                                {...register(`graduation.${index}.isIntitutionPrivate`)}
-                              />
-                              {errors.graduation?.[index] && <p className="text-red-900">{errors.graduation[index]?.isIntitutionPrivate?.message}</p>}
-                            </div>
->>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
                           </div>
                         )
                       })
