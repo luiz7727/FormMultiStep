@@ -1,10 +1,10 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { IBM_Plex_Sans } from 'next/font/google'
+import { Open_Sans } from 'next/font/google'
 
-const ibm = IBM_Plex_Sans({
+const open = Open_Sans({
   subsets: ['latin'],
-  weight: '700',
+  weight: '400',
 })
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={ibm.className}>{children}</body>
+      <body className={open.className}>{children}</body>
     </html>
   )
 }
