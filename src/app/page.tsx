@@ -11,7 +11,7 @@ import { isAdult } from "@/utils/isAdult";
 import isCepValid, { CepData } from "@/utils/isCepValid";
 
 const mySchema = z.object({
-  name: z.string().min(4, { message: "Name is required" }).nonempty({ message: "Nome é obrigatório" }),
+  name: z.string().min(4, { message: "Nome precisa ter no mínimo 4 caracteres" }).nonempty({ message: "Nome é obrigatório" }),
   cpf: z.string().min(11, { message: "O cpf precisa ter no mínimo 11 números" }).max(11, { message: "O cpf precisa ter no máximo 11 números" })
     .nonempty({ message: "cpf é obrigatório" }).refine((cpf) => isCpfValid(cpf), { message: "CPF inválido" }),
   email: z.string().nonempty({ message: "O email é obrigatório" }),
@@ -33,8 +33,7 @@ const mySchema = z.object({
     name: z.string().nonempty({ message: "O nome da graduação é obrigatório" }),
     dateStart: z.string().nonempty({ message: "A data de início é obrigatório" }),
     dateEnd: z.string().nonempty({ message: "A data de fim é obrigatório" }),
-    isCollegePrivate: z.boolean().default(false),
-    isSchoolPublic: z.boolean().default(false),
+    isIntitutionPrivate: z.boolean().default(false),
   })).min(1, "Insira pelo menos uma graduação"),
   acceptRegulation: z.boolean().default(false).refine((value) => value === true, { message: "Voce precisa aceitar os termos de privacidade" })
 }).required();
@@ -44,8 +43,6 @@ type createUserFormData = z.infer<typeof mySchema>;
 export default function Home() {
 
   const [step, setStep] = useState<number>(1);
-
-  const [inputDisabled, setInputDisabled] = useState<boolean>(false);
 
   const { control, clearErrors, register, watch, getValues, setError, handleSubmit, formState: { errors }, setValue } = useForm<createUserFormData>({
     resolver: zodResolver(mySchema),
@@ -63,8 +60,7 @@ export default function Home() {
     }
   }
 
-  async function validateStep2() {
-
+  async function searchCep() {
     const data = await isCepValid(getValues("address.cep"));
 
     if (data.status === 200) {
@@ -73,12 +69,17 @@ export default function Home() {
       setValue("address.nameStreet", response.address);
       setValue("address.state", response.state);
       setValue("address.city", response.city);
-      setInputDisabled(true);
-      setStep(step + 1);
     }
 
     if (data.status === 404) {
       setError("address.cep", { message: "Cep inválido" })
+    }
+  }
+
+  function validateStep2() {
+
+    if(getValues("address.nameStreet").length > 0 && getValues("address.numberStreet") >= 0 && getValues("address.city").length > 0 && getValues("address.state").length > 0 && getValues("address.neighborhood").length > 0) {
+      setStep(step + 1);
     }
   }
 
@@ -87,7 +88,7 @@ export default function Home() {
   }
 
   function addNewGraduation() {
-    append({ name: "", dateStart: "", dateEnd: "", isCollegePrivate: false, isSchoolPublic: false });
+    append({ name: "", dateStart: "", dateEnd: "", isIntitutionPrivate: false });
   }
 
   function removeGraduation(id: string) {
@@ -196,37 +197,43 @@ export default function Home() {
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">CEP</label>
-                  <input minLength={9} maxLength={9} autoComplete="off" {...register("address.cep")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none" placeholder="Digite o cep" />
+                  
+                  <div className="w-full flex items-center">
+                    <input minLength={9} maxLength={9} autoComplete="off" {...register("address.cep")} type="text" className="p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none" placeholder="Digite o cep" />
+                    <button type="button" className="rounded-lg p-2 bg-green-900 text-white" onClick={() => searchCep()}>Buscar CEP</button>
+                  </div>
+                  
                   {errors.address?.cep && <p className="text-red-900">{errors.address.cep.message}</p>}
+
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Nome da rua</label>
-                  <input disabled={inputDisabled} autoComplete="off" {...register("address.nameStreet")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o nome da rua" />
+                  <input autoComplete="off" {...register("address.nameStreet")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o nome da rua" />
                   {errors.address?.nameStreet && <p className="text-red-900">{errors.address.nameStreet.message}</p>}
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Numero da rua</label>
-                  <input autoComplete="off" {...register("address.numberStreet")} type="number" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o número da sua rua" />
+                  <input min={0} autoComplete="off" {...register("address.numberStreet")} type="number" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Digite o número da sua rua" />
                   {errors.address?.numberStreet && <p className="text-red-900">{errors.address.numberStreet.message}</p>}
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Complemento</label>
-                  <input disabled={inputDisabled} autoComplete="off" {...register("address.complement")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  <input autoComplete="off" {...register("address.complement")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
                   {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Cidade</label>
-                  <input disabled={inputDisabled} autoComplete="off" {...register("address.city")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  <input autoComplete="off" {...register("address.city")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
                   {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
                 </div>
 
                 <div className="w-full flex flex-col">
                   <label className="text-black">Estado</label>
-                  <input disabled={inputDisabled} autoComplete="off" {...register("address.state")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
+                  <input autoComplete="off" {...register("address.state")} type="text" className="p-2 border-2 border-[#E1E1E6] text-black outline-none" placeholder="Caso não tenha, não digite" />
                   {errors.address?.complement && <p className="text-red-900">{errors.address.complement.message}</p>}
                 </div>
 
@@ -299,18 +306,9 @@ export default function Home() {
                               <input
                                 placeholder="Informe se é uma instituição privada"
                                 className="ml-4 p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none"
-                                {...register(`graduation.${index}.isCollegePrivate`)}
+                                {...register(`graduation.${index}.isIntitutionPrivate`)}
                               />
-                              {errors.graduation?.[index] && <p className="text-red-900">{errors.graduation[index]?.isCollegePrivate?.message}</p>}
-                            </div>
-                            <div className="flex flex-col items-start">
-                              <label className="text-black">É uma instituição publica ?</label>
-                              <input
-                                placeholder="Informe se é uma instituição publica"
-                                className="ml-4 p-2 border-2 border-[#E1E1E6] rounded-sm text-black outline-none"
-                                {...register(`graduation.${index}.isSchoolPublic`)}
-                              />
-                              {errors.graduation?.[index] && <p className="text-red-900">{errors.graduation[index]?.isSchoolPublic?.message}</p>}
+                              {errors.graduation?.[index] && <p className="text-red-900">{errors.graduation[index]?.isIntitutionPrivate?.message}</p>}
                             </div>
                           </div>
                         )
