@@ -13,6 +13,7 @@ export interface ErrorCep {
 }
 
 export default async function isCepValid(cep: string) {
+<<<<<<< HEAD
 
   try {
     const { data } = await axios.get<CepData>(`https://cdn.apicep.com/file/apicep/${cep}.json`);
@@ -27,3 +28,19 @@ export default async function isCepValid(cep: string) {
   }
 
 }
+=======
+
+  try {
+    const { data } = await axios.get<CepData>(`https://cdn.apicep.com/file/apicep/${cep}.json`);
+    return data;
+  }
+  catch (e) {
+    const data: ErrorCep = {
+      code: "NOT_FOUND",
+      status: 404
+    }
+    return data
+  }
+
+}
+>>>>>>> 930706628d3c857662b7c280609a9e7cd8174de3
